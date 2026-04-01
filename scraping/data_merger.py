@@ -38,7 +38,7 @@ PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
 
 # Fuzzy match score threshold (0-100). Pairs scoring above this are considered
 # the same entity. Tune this carefully — too low causes false merges.
-FUZZY_THRESHOLD = 88
+FUZZY_THRESHOLD = 82
 
 # ---------------------------------------------------------------------------
 # Canonical name maps – hand-verified corrections applied before fuzzy pass

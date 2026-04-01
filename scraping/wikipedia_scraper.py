@@ -95,8 +95,10 @@ def _strip_wiki_markup(text: str) -> str:
     return text.strip().strip("|").strip()
 
 
-def _extract_year(text: str) -> int | None:
+def _extract_year(text: str | None) -> int | None:
     """Return the first 4-digit year found in text, or None."""
+    if not text:
+        return None
     m = re.search(r"\b(1[89]\d{2}|20[012]\d)\b", text)
     return int(m.group(1)) if m else None
 
@@ -158,14 +160,20 @@ def _parse_positions(wikitext: str, page_title: str) -> list[dict]:
         r"(?P<role>"
         + "|".join(re.escape(r) for r in POSITION_ROLES)
         + r")"
-        r"(?:\s+of\s+(?:the\s+)?)?(?P<orchestra>[A-Z][^\n,(]{4,60}?)"
-        r"(?:\s*[\(\[]?\s*(?P<start>\d{4})\s*[–\-]\s*(?P<end>\d{4}|present|ongoing)?\s*[\)\]]?)?",
+        r"(?:\s+of\s+(?:the\s+)?)?"
+        # Greedy capture — stops at comma, paren, or newline; trailing noise stripped below
+        r"(?P<orchestra>[A-Z][^\n,(]{4,60})"
+        # Optional year block: "(2014–present)", "(2010–2018)", "since 2014", or bare "2014"
+        r"(?:\s*[\(\[]?\s*(?:since\s+)?(?P<start>\d{4})(?:\s*[–\-]\s*(?P<end>\d{4}|present|ongoing))?\s*[\)\]]?)?",
         re.IGNORECASE,
     )
 
     for m in role_pattern.finditer(wikitext):
         role = m.group("role").strip().title()
-        orchestra = _strip_wiki_markup(m.group("orchestra").strip().rstrip(",;. "))
+        raw_orch = m.group("orchestra")
+        # Strip trailing prepositions/connectors left by the greedy match
+        raw_orch = re.sub(r'\s+(?:since|in|from|at|during)\s*$', '', raw_orch, flags=re.IGNORECASE)
+        orchestra = _strip_wiki_markup(raw_orch.strip().rstrip(",;. "))
         start_year = int(m.group("start")) if m.group("start") else None
         end_raw = m.group("end") if m.group("end") else None
         end_year = None if end_raw in (None, "present", "ongoing") else int(end_raw)

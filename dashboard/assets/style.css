@@ -1,0 +1,84 @@
+/* ================================================================
+   Conductor Network Dashboard – custom styles
+   Extends Dash Bootstrap FLATLY theme
+   ================================================================ */
+
+/* ── Base ──────────────────────────────────────────────────────── */
+body {
+  background-color: #F8F9FA;
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+}
+
+/* ── Left panel ────────────────────────────────────────────────── */
+.filters-panel {
+  position: sticky;
+  top: 0.75rem;
+  max-height: calc(100vh - 1.5rem);
+  overflow-y: auto;
+}
+
+/* ── Profile card ───────────────────────────────────────────────── */
+.profile-card {
+  border-left: 4px solid #2196F3;
+}
+
+.profile-card .card-header {
+  background: linear-gradient(90deg, #E3F2FD 0%, #ffffff 100%);
+  border-bottom: 1px solid #BBDEFB;
+}
+
+/* Metric badges */
+.metric-badge {
+  font-size: 0.72rem;
+  padding: 2px 6px;
+}
+
+/* ── Sample data alert ──────────────────────────────────────────── */
+.sample-data-alert {
+  font-size: 0.82rem;
+}
+
+/* ── Tab content area ───────────────────────────────────────────── */
+.tab-content {
+  min-height: 580px;
+}
+
+/* Remove default card padding around the tabs */
+.card-body {
+  padding: 0.5rem !important;
+}
+
+/* ── Cytoscape container ────────────────────────────────────────── */
+#cytoscape-graph {
+  background-color: #FAFAFA;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 992px) {
+  .filters-panel {
+    position: static;
+    max-height: none;
+  }
+}
+
+/* ── Scrollbar (webkit) ─────────────────────────────────────────── */
+.filters-panel::-webkit-scrollbar {
+  width: 4px;
+}
+.filters-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+.filters-panel::-webkit-scrollbar-thumb {
+  background: #BDBDBD;
+  border-radius: 2px;
+}
+
+/* ── Dropdown multi-select tokens ───────────────────────────────── */
+.Select-value {
+  font-size: 0.8rem !important;
+}
+
+/* ── List group inside profile card ─────────────────────────────── */
+.list-group-item {
+  background: transparent;
+}

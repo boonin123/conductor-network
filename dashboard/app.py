@@ -318,4 +318,9 @@ def _apply_ego_classes(
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    app.run(debug=True, port=8050)
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--port", type=int, default=8051)
+    parser.add_argument("--debug", action="store_true", default=True)
+    args = parser.parse_args()
+    app.run(debug=args.debug, port=args.port)

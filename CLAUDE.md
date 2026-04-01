@@ -6,7 +6,19 @@ This project investigates the claim that Maestro Andris Nelsons's non-renewal as
 
 **Two deliverables:**
 1. A Jupyter notebook suite with reproducible statistical network analysis
-2. An interactive dashboard visualizing conductor networks overlaid on a geographic map
+2. An interactive Dash dashboard visualizing conductor networks overlaid on a geographic map
+
+---
+
+## Status
+
+| Layer | Status | Notes |
+|---|---|---|
+| Scraping pipeline | ✅ Built | Not yet run against live sources |
+| `network/builder.py` | ✅ Complete | 125/125 tests passing |
+| `network/metrics.py` | ✅ Complete | 125/125 tests passing |
+| Dashboard | ✅ Running | Sample data; swap for real data after scraping |
+| Notebooks | ⬜ Not started | Next phase |
 
 ---
 
@@ -26,7 +38,7 @@ This project investigates the claim that Maestro Andris Nelsons's non-renewal as
 
 Primary subject: **Andris Nelsons** (BSO 2014–2025; Leipzig Gewandhaus Orchestra 2018–present)
 
-Peer comparators (adjust as data permits):
+Peer comparators:
 - Gustavo Dudamel (LA Phil + Paris Opera)
 - Yannick Nézet-Séguin (Philadelphia Orchestra + Met Opera + Orchestre Métropolitain)
 - Klaus Mäkelä (Concertgebouw + Oslo + Chicago incoming)
@@ -41,60 +53,105 @@ Peer comparators (adjust as data permits):
 
 ```
 conductor-network/
-├── CLAUDE.md                         # This file
+├── CLAUDE.md
 ├── README.md
 ├── requirements.txt
 │
 ├── data/
-│   ├── raw/                          # Never modified after collection
+│   ├── raw/                          # Never modified after collection (gitignored)
 │   │   ├── wikipedia/
 │   │   ├── bachtrack/
 │   │   └── orchestra_websites/
-│   ├── processed/
+│   ├── processed/                    # Output of data_merger.py (gitignored)
 │   │   ├── conductors.csv
-│   │   ├── orchestras.csv            # Includes lat/lon
-│   │   ├── positions.csv             # Permanent roles: who, where, start/end year
-│   │   ├── guest_appearances.csv     # Individual guest events
+│   │   ├── orchestras.csv
+│   │   ├── positions.csv
+│   │   ├── guest_appearances.csv
 │   │   ├── nodes_all.csv
-│   │   └── edges_all.csv             # Schema: source_id, target_id, edge_type, role, start_date, end_date, appearance_count, season, venue_id
+│   │   └── edges_all.csv
 │   └── external/
-│       └── world_cities.csv          # Geocoding reference
+│       └── world_cities.csv
 │
 ├── scraping/
-│   ├── wikipedia_scraper.py          # Conductor/orchestra infobox extraction (build first)
-│   ├── bachtrack_scraper.py          # Concert listing scraper
-│   ├── orchestra_site_scraper.py     # Per-orchestra season page scrapers
-│   ├── geocoder.py                   # Venue/city lat-lon resolution via Nominatim
-│   └── data_merger.py                # Deduplication and cross-source entity resolution
-│
-├── notebooks/
-│   ├── 00_data_acquisition.ipynb     # Scraping runs, raw data validation
-│   ├── 01_data_cleaning.ipynb        # Normalization, deduplication, entity resolution
-│   ├── 02_network_construction.ipynb # Build MultiDiGraph, validate schema
-│   ├── 03_descriptive_stats.ipynb    # EDA: summary tables, degree distributions
-│   ├── 04_centrality_analysis.ipynb  # Main deliverable: centrality metrics + peer comparison
-│   ├── 05_temporal_analysis.ipynb    # Season-by-season network evolution
-│   ├── 06_geographic_analysis.ipynb  # Dispersion metrics, transatlantic transitions
-│   ├── 07_community_detection.ipynb  # Louvain/Leiden community structure
-│   └── 08_conclusions.ipynb          # Synthesis, narrative, key figures
+│   ├── wikipedia_scraper.py          # Permanent positions from infoboxes → conductors_raw.json
+│   ├── bachtrack_scraper.py          # Paginated concert listings → concert_listings_raw.json
+│   ├── orchestra_site_scraper.py     # 7 orchestra sites, 12 seasons each
+│   ├── geocoder.py                   # Nominatim geocoding with 22 hard-coded overrides
+│   └── data_merger.py                # Fuzzy entity resolution → 6 processed CSVs
 │
 ├── network/
-│   ├── builder.py                    # Graph construction from processed CSVs (imported by all notebooks + dashboard)
-│   ├── metrics.py                    # Custom metric computations
-│   ├── temporal.py                   # Time-sliced subgraph utilities
-│   └── geo.py                        # Geographic graph projections
+│   ├── builder.py                    # build_graph(), get_ego_network(), get_season_subgraph(),
+│   │                                 # conductor_orchestra_bipartite(), validate_graph(), load_graph()
+│   ├── metrics.py                    # degree_by_edge_type(), home_share_ratio(),
+│   │                                 # geographic_dispersion(), transatlantic_transitions(),
+│   │                                 # conductor_centrality_table(), ego_network_size_over_time()
+│   ├── temporal.py                   # (placeholder — time-sliced utilities)
+│   └── geo.py                        # (placeholder — geographic projections)
 │
-└── dashboard/
-    ├── app.py                        # Main Dash entry point
-    ├── layout.py                     # Top-level layout
-    ├── assets/
-    │   └── style.css
-    └── components/
-        ├── map_view.py               # Plotly Scattergeo geographic network overlay (most complex)
-        ├── network_view.py           # dash-cytoscape force-directed graph
-        ├── conductor_profile.py      # Selected conductor stats card
-        ├── timeline_view.py          # Seasonal activity stacked chart
-        └── filters.py                # Year range, conductor selector, edge type toggles
+├── notebooks/
+│   ├── 00_data_acquisition.ipynb     # ⬜ Scraping runs, raw data validation
+│   ├── 01_data_cleaning.ipynb        # ⬜ Normalization, entity resolution
+│   ├── 02_network_construction.ipynb # ⬜ Build MultiDiGraph, validate schema
+│   ├── 03_descriptive_stats.ipynb    # ⬜ EDA: summary tables, degree distributions
+│   ├── 04_centrality_analysis.ipynb  # ⬜ Main deliverable: centrality + peer comparison
+│   ├── 05_temporal_analysis.ipynb    # ⬜ Season-by-season evolution
+│   ├── 06_geographic_analysis.ipynb  # ⬜ Dispersion metrics, transatlantic transitions
+│   ├── 07_community_detection.ipynb  # ⬜ Louvain/Leiden community structure
+│   └── 08_conclusions.ipynb          # ⬜ Synthesis, narrative, key figures
+│
+├── dashboard/
+│   ├── app.py                        # Dash app + all callbacks; run with `python -m dashboard.app`
+│   ├── data.py                       # load_data(), generate_sample_data(), filter_data()
+│   ├── layout.py                     # Two-panel dbc.Container layout
+│   ├── assets/style.css
+│   └── components/
+│       ├── filters.py                # Left-panel controls (conductor, season, edge type, layout)
+│       ├── map_view.py               # Plotly Scattergeo with great-circle arc traces
+│       ├── network_view.py           # dash-cytoscape + Louvain community coloring
+│       ├── conductor_profile.py      # Profile card with centrality badges + sparkline
+│       └── timeline_view.py          # Stacked bar (home/guest) + home-share ratio line
+│
+└── tests/
+    ├── test_scraping.py              # ✅ 70 tests (offline, no network calls)
+    ├── test_network_builder.py       # ✅ 30 tests
+    └── test_metrics.py               # ✅ 25 tests
+```
+
+---
+
+## Running the Project
+
+### Dashboard (sample data, no scraping required)
+```bash
+cd ~/Desktop/conductor-network
+python -m dashboard.app              # → http://localhost:8051
+python -m dashboard.app --port 8052  # custom port
+```
+
+### Full pipeline (real data)
+```bash
+# 1. Scrape permanent positions from Wikipedia
+python -m scraping.wikipedia_scraper
+
+# 2. Scrape concert listings from Bachtrack
+python -m scraping.bachtrack_scraper
+
+# 3. Scrape orchestra season archives
+python -m scraping.orchestra_site_scraper
+
+# 4. Geocode venues
+python -m scraping.geocoder
+
+# 5. Merge and deduplicate all sources
+python -m scraping.data_merger
+
+# 6. Restart dashboard — it auto-detects the processed CSVs
+python -m dashboard.app
+```
+
+### Tests
+```bash
+pytest tests/ -v   # 125 tests, ~1s
 ```
 
 ---
@@ -106,141 +163,153 @@ conductor-network/
 |---|---|
 | Graph data structure | `networkx` (MultiDiGraph) |
 | Tabular data | `pandas` |
-| Community detection | `cdlib` (Louvain/Leiden) or `python-louvain` |
+| Community detection | `python-louvain` (with `cdlib` fallback) |
 | Statistical testing | `scipy.stats` (prefer non-parametric given small N) |
 | Notebook charts | `matplotlib`, `seaborn`, `plotly` |
 
 ### Dashboard
 | Purpose | Library |
 |---|---|
-| App framework | `Dash` (Plotly) |
+| App framework | `Dash` + `dash-bootstrap-components` (FLATLY theme) |
 | Geographic map | `plotly.graph_objects.Scattergeo` |
 | Network graph | `dash-cytoscape` |
-| Styling | Dash Bootstrap Components |
 
 ### Data Acquisition
 | Purpose | Library |
 |---|---|
-| HTTP / scraping | `requests`, `beautifulsoup4`, `lxml` |
-| Wikipedia API | `mwclient` or `wikipedia-api` |
-| Geocoding | `geopy` (Nominatim — free, no API key) |
-| Fuzzy matching | `rapidfuzz` (entity resolution) |
-| Rate limiting | `tenacity` |
+| HTTP / HTML scraping | `requests`, `beautifulsoup4`, `lxml` |
+| Wikipedia API | `mwclient` |
+| Geocoding | `geopy` (Nominatim) |
+| Fuzzy entity resolution | `rapidfuzz` |
+| Retry logic | `tenacity` |
 
 ---
 
 ## Graph Schema
 
-**Node types** (distinguished by `node_type` attribute):
-- `conductor`: name, nationality, birth_year, active_since
-- `orchestra`: name, city, country, lat, lon, tier (Big 5 / regional / chamber)
-- `venue`: name, city, country, lat, lon, capacity
-- `season`: year integer (e.g., 2019 = 2018–19 season)
+**Node types** (`node_type` attribute):
+- `conductor`: label, nationality, birth_year
+- `orchestra`: label, city, country, lat, lon, tier (`big5` / `regional` / `chamber`)
 
-**Edge types** (distinguished by `edge_type` attribute):
-- `permanent_position`: conductor → orchestra | role, start_year, end_year
-- `guest_appearance`: conductor → orchestra | date, program, venue
-- `performs_at`: orchestra → venue | home/guest flag
-- `active_in`: conductor → season (derived)
+**Edge types** (`edge_type` attribute):
+- `permanent_position`: conductor → orchestra | role, start_year, end_year, is_current
+- `permanent_home`: conductor → orchestra | season, appearance_count (home appearances that season)
+- `guest_appearance`: conductor → orchestra | season, appearance_count
 
-**Projected graphs for analysis:**
-- Conductor-orchestra bipartite (weight = total appearances)
-- Conductor co-appearance graph (shared orchestra connections)
-- Orchestra similarity graph (shared conducting personnel)
+**Projected graphs:**
+- Conductor-orchestra bipartite (weight = total appearance count)
+- Conductor co-appearance graph (shared orchestras)
 
 ---
 
 ## Notebook Analysis Plan
 
 ### 03 — Descriptive Statistics
-- Table: conductor × (permanent positions, guest appearances, distinct orchestras, countries, active years)
-- Bar chart: total engagements per conductor per season
-- Nelsons-specific: BSO appearances per season vs. Leipzig and guest total
-- "Home share" ratio: what fraction of each conductor's appearances are at their primary employer?
+- Conductor × (permanent positions, guest appearances, distinct orchestras, countries, active years)
+- BSO appearances per season vs. Leipzig and guest total for Nelsons
+- "Home share" ratio comparison across all conductors
 
-### 04 — Centrality Analysis (primary deliverable)
-- Degree, weighted degree, betweenness, PageRank on conductor-orchestra bipartite
-- Scatter plot: centrality score vs. tenure length (does high centrality predict shorter tenure?)
-- Nelsons as outlier? Z-score vs. peer distribution
+### 04 — Centrality Analysis *(primary deliverable)*
+- Degree, weighted degree, betweenness, PageRank on the bipartite projection
+- Z-score: is Nelsons a statistical outlier vs. peers?
+- Scatter: centrality vs. tenure length
 
 ### 05 — Temporal Analysis
 - Time-sliced subgraphs per season (2013–2025)
-- Track Nelsons's degree over time; identify when external engagement grew most sharply
-- BSO share trend: when did BSO stop being the majority of his schedule?
+- BSO share trend: when did BSO stop being the majority of Nelsons's schedule?
+- Ego network size over time: when did complexity peak?
 
 ### 06 — Geographic Analysis
-- Per conductor per season: distinct countries, mean distance between consecutive concerts, geographic centroid
-- Transatlantic transitions: count Boston ↔ Leipzig flights implied by schedule
-- Geographic dispersion index: variance of (lat, lon) across season appearances
+- Geographic dispersion index per conductor per season
+- Transatlantic transitions: inferred Boston ↔ Leipzig crossing count
+- Geographic centroid drift over career
 
 ### 07 — Community Detection
 - Louvain on projected conductor-orchestra graph
 - Do communities map to geographic regions?
-- Is Nelsons a cross-community bridge? Compute bridge score.
+- Is Nelsons a cross-community bridge? Compute bridge centrality.
 
 ### 08 — Conclusions
-- Directly address "stretched thin" claim with effect sizes
-- Note confounders: COVID gaps (2020–22), Leipzig appointment predates BSO role
-- Statistical note: N is small (10–15 conductors); use non-parametric tests, report effect sizes not just p-values
-
----
-
-## Dashboard Layout
-
-**Left panel (40%):** Controls + Conductor Profile Card
-- Multi-select dropdown: conductor selection
-- Year range slider: season filter
-- Edge type radio: permanent only / guest only / all
-- Profile card on node click: name, positions, centrality scores, career sparkline
-
-**Right panel (60%):** Tabbed visualizations
-
-**Tab 1 — Geographic Map (`map_view.py`)**
-- Orchestra nodes: circles sized by number of visiting conductors, colored by tier
-- Conductor nodes: diamonds at home-base city
-- Edges: great-circle arc lines weighted by appearance count; permanent = high opacity, guest = low opacity
-- Ego network highlight on conductor selection: connected orchestras enlarge, others dim
-
-**Tab 2 — Network Graph (`network_view.py`)**
-- `dash-cytoscape` force-directed layout (cose-bilkent default)
-- Conductor nodes colored by community; orchestra nodes sized by prestige tier
-- Edge thickness by appearance weight
-- Hover tooltip: role, years active, appearance count
-- Layout toggle: force-directed / concentric (centrality-ordered) / breadthfirst
-
-**Tab 3 — Temporal Chart (`timeline_view.py`)**
-- Stacked area: home-orchestra appearances vs. guest appearances per season per conductor
-- Small multiples: "home share" ratio over time for each selected conductor
-
----
-
-## Data Acquisition Strategy
-
-### Phase 1: Permanent Positions (Wikipedia infoboxes)
-Extract for each conductor: all permanent roles (Music Director, Principal Conductor, Principal Guest Conductor) with start/end years. This is the backbone of the graph — build `wikipedia_scraper.py` first.
-
-### Phase 2: Orchestra Metadata
-For each orchestra in the resulting set: city, country, venue, lat/lon. Geocode via Nominatim, cache results.
-
-### Phase 3: Guest Appearances
-**Bachtrack** is the primary source (most comprehensive concert database). Check robots.txt, use respectful rate limiting. Each result: date, conductor, orchestra, venue, program.
-
-**Orchestra season archives**: BSO, LA Phil, Philadelphia, Berlin Phil, etc. post programs on their websites (often 5–10 seasons back).
-
-**Fallback**: Manual curation from press releases for Nelsons and 2–3 key comparators if scraping is incomplete.
-
-### Phase 4: Entity Resolution
-Orchestra names vary across sources ("BSO", "Boston Symphony", "Boston Symphony Orchestra"). Use `rapidfuzz` for fuzzy matching before deduplication. Same for venues and conductor name variants.
+- Directly address "stretched thin" with effect sizes (Mann-Whitney U, Cohen's d)
+- Confounders: COVID gaps (2020–22), Leipzig predates BSO, pandemic touring disruption
+- Statistical note: N ≈ 10–15; report effect sizes, not just p-values
 
 ---
 
 ## Key Implementation Notes
 
-- **All analytical logic lives in `network/`** so both notebooks and dashboard import from the same source. Notebooks = exploration. Dashboard = presentation only.
-- **`network/builder.py` is the central hub** — define graph schema here; all other code depends on it.
-- **`wikipedia_scraper.py` quality determines data quality everywhere downstream** — invest in robust entity resolution here.
-- **`map_view.py` is the most technically complex dashboard component** — the geographic network overlay is the project's signature visual.
-- **`edges_all.csv` schema is load-bearing** — design columns carefully: `source_id, target_id, edge_type, role, start_date, end_date, appearance_count, season, venue_id`.
-- **Statistical rigor note**: With ~10–15 conductors in the comparison pool, prefer Mann-Whitney U and Cohen's d over t-tests and raw p-values.
-- All scraping writes to `data/raw/` with timestamps. All cleaning decisions documented in `01_data_cleaning.ipynb` with explicit justifications.
-- Pin all package versions in `requirements.txt` for reproducibility.
+- **All analytical logic lives in `network/`** — notebooks and dashboard both import from there. Notebooks = exploration. Dashboard = presentation only.
+- **Sample data encodes the story**: BSO home appearances deliberately decline from 18 → 7 (2014 → 2024) in `generate_sample_data()` to reflect the real trajectory. The dashboard is already illustrative before scrapers are run.
+- **Fuzzy threshold**: set to 82 in `data_merger.py`. Tune up if false merges appear; tune down if known aliases aren't resolving.
+- **Geocoder cache**: `data/processed/venues_geocoded.json` — delete to force re-geocoding.
+- **Statistical rigor**: small N (~10–15 conductors). Prefer Mann-Whitney U and Cohen's d over t-tests. Be explicit about this in notebook 08.
+
+---
+
+## Future Work
+
+### Immediate (before notebooks)
+- [ ] Run `wikipedia_scraper.py` and validate position extraction for all 8 conductors
+- [ ] Run `bachtrack_scraper.py` — check robots.txt compliance, inspect first-page HTML to verify CSS selectors in `_parse_concert_list()`
+- [ ] Validate `orchestra_site_scraper.py` against live BSO and Gewandhaus pages — site HTML changes frequently
+- [ ] Run `data_merger.py` and audit entity resolution output for false merges / missed aliases
+
+### Notebook phase
+- [ ] `00_data_acquisition.ipynb` — scraping runs with raw data validation
+- [ ] `01_data_cleaning.ipynb` — document all normalisation decisions
+- [ ] `02_network_construction.ipynb` — build and validate full graph
+- [ ] `03`–`08` analysis notebooks (see plan above)
+
+### Dashboard enhancements
+- [ ] Add a **conductor comparison panel**: side-by-side metric table for selected conductors
+- [ ] Add **recordings layer** (Discogs/AllMusic data) as a third edge type
+- [ ] Export selected ego network as PNG / GraphML from the network tab
+- [ ] Deploy to a public URL (Render free tier, Railway, or HuggingFace Spaces)
+
+### Data improvements
+- [ ] Add Met Opera and Paris Opera as orchestra nodes (relevant for Nézet-Séguin and Dudamel)
+- [ ] Extend conductor list: Jakub Hrůša, Robin Ticciati, Dalia Stasevska
+- [ ] Cross-reference with recording contracts (Deutsche Grammophon, Sony Classical) as proxy for prestige/demand
+
+---
+
+## Changelog
+
+### Session 1 — 2026-04-01
+**Spec & scaffold**
+- Created `CLAUDE.md` with full project specification, research questions, graph schema, and notebook + dashboard plans
+- Initialized GitHub repo at `boonin123/conductor-network`
+- Created full directory skeleton with Python packages
+
+**Scraping layer**
+- `scraping/wikipedia_scraper.py`: extracts permanent positions from Wikipedia infoboxes via `mwclient`; greedy orchestra regex with trailing-preposition strip; handles "since YYYY" year syntax
+- `scraping/bachtrack_scraper.py`: paginated concert listings with per-conductor disk cache; 2s polite crawl delay
+- `scraping/orchestra_site_scraper.py`: HTML/JSON parsers for BSO, LA Phil, Philadelphia, Berlin, Gewandhaus, Chicago, NY Phil across 12 seasons
+- `scraping/geocoder.py`: Nominatim geocoding with 22 hard-coded venue overrides (Symphony Hall, Walt Disney Concert Hall, etc.), disk cache, batch mode
+- `scraping/data_merger.py`: multi-source merge → 6 processed CSVs; `rapidfuzz` entity resolution; fuzzy threshold 82
+
+**Network layer**
+- `network/builder.py`: `build_graph()`, `get_ego_network()`, `get_season_subgraph()`, `conductor_orchestra_bipartite()`, `validate_graph()`, `load_graph()`
+- `network/metrics.py`: `degree_by_edge_type()`, `home_share_ratio()`, `geographic_dispersion()` (haversine), `transatlantic_transitions()`, `conductor_centrality_table()`, `ego_network_size_over_time()`
+
+**Test suite**
+- `tests/test_scraping.py`: 70 offline tests
+- `tests/test_network_builder.py`: 30 tests
+- `tests/test_metrics.py`: 25 tests
+- **125/125 tests passing**
+
+**Dashboard**
+- `dashboard/data.py`: `AppData` dataclass, `generate_sample_data()` (8 conductors, 12 orchestras, 2013–2024 with realistic BSO decline curve), `load_data()` with CSV fallback, `filter_data()`
+- `dashboard/components/filters.py`: sticky left-panel controls
+- `dashboard/components/map_view.py`: Scattergeo with grouped great-circle arcs (None-separator technique), orchestra circles, conductor diamonds
+- `dashboard/components/network_view.py`: `dash-cytoscape` elements + stylesheet; Louvain community detection with `python-louvain` fallback; per-element background color; ego `dimmed` class
+- `dashboard/components/conductor_profile.py`: centrality badges, positions list, dual-axis sparkline
+- `dashboard/components/timeline_view.py`: `make_subplots` stacked bars + home-share ratio line with 50% reference
+- `dashboard/layout.py`: two-panel `dbc.Container` (4/8 split), sample-data warning alert
+- `dashboard/app.py`: 3 callbacks (visualisations, layout toggle, profile card); default port 8051
+
+**Bug fixes**
+- `_extract_year(None)` now returns `None` instead of crashing
+- Orchestra regex made greedy with trailing-preposition strip
+- Fuzzy threshold lowered 88 → 82
+- NaN → `int` cast guarded in `map_view.py`
